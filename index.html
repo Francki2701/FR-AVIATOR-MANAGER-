@@ -1,12 +1,33 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FR AVIATOR V5 CAPTURE</title><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script><style>*{box-sizing:border-box;font-family:-apple-system,sans-serif}body{margin:0;background:#0a0a12;color:#fff;padding:14px;text-align:center}h1{font-size:24px}.card{background:#1a1a2e;border:1px solid #333;border-radius:18px;padding:16px;margin-top:14px}button{padding:16px;border:0;border-radius:14px;font-weight:900;font-size:16px;width:100%;margin-top:10px}input{width:100%;padding:12px;border-radius:10px;background:#0a0a12;color:#fff;border:1px solid #444;margin-top:8px}.b-yellow{background:#f59e0b;color:#000}.pill{display:inline-block;padding:8px 12px;border-radius:20px;font-weight:800;margin:3px;background:#333}.big{font-size:22px;font-weight:900}</style></head><body>
-<h1>✈️ FR AVIATOR <span style="color:#f59e0b">V5 CAPTURE</span></h1><div style="color:#aaa;font-size:12px">CAPTURE ➡️ BOOM ➡️ 2 SEC</div>
-<div class="card"><h3 style="margin:0">📸 Mets ta capture, c'est tout</h3><input type="file" accept="image/*" id="f" style="display:none" onchange="go(event)"><button class="b-yellow" onclick="document.getElementById('f').click()">📸 UPLOAD CAPTURE - BOOM AUTO</button><img id="prev" style="display:none;width:100%;border-radius:12px;margin-top:10px;border:2px solid #f59e0b"><div id="status" style="margin-top:10px;color:#f59e0b;font-size:14px">⏳ Je me prépare... attends 5 sec que je charge</div><div id="liste"></div></div>
-<div class="card" id="resCard" style="display:none"><h3 style="margin:0">🎯 RÉPONSE</h3><div id="res"></div><button class="b-yellow" onclick="document.getElementById('f').click()">🔄 NOUVELLE CAPTURE</button></div>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FR AVIATOR V6</title><style>*{box-sizing:border-box;font-family:-apple-system,sans-serif}body{margin:0;background:#0a0a12;color:#fff;padding:20px;text-align:center}h1{font-size:26px;margin-top:20px}.card{background:#1a1a2e;border:1px solid #333;border-radius:20px;padding:20px;margin-top:20px}button{padding:22px;border:0;border-radius:18px;font-weight:900;font-size:20px;width:100%;background:#f59e0b;color:#000}.big{font-size:26px;font-weight:900}.pill{display:inline-block;padding:8px 12px;border-radius:20px;font-weight:800;margin:3px;background:#333}</style></head><body>
+<h1>✈️ FR AVIATOR <span style="color:#f59e0b">V6</span></h1>
+<div class="card">
+<input type="file" accept="image/*" id="f" style="display:none" onchange="go(event)">
+<button onclick="document.getElementById('f').click()">📸 METS TA CAPTURE</button>
+<div id="status" style="margin-top:14px;color:#aaa">Mets ta capture, j'analyse tout seul</div>
+<img id="prev" style="display:none;width:100%;border-radius:14px;margin-top:12px;border:2px solid #f59e0b">
+<div id="liste" style="margin-top:10px"></div>
+</div>
+<div class="card" id="resCard" style="display:none"><div id="res"></div><button onclick="document.getElementById('f').click()" style="background:#16a34a;color:#fff;margin-top:14px">🔄 NOUVELLE CAPTURE</button></div>
 <script>
-let worker=null;let ready=false;
-async function init(){try{worker=await Tesseract.createWorker('eng',{logger:m=>{}});await worker.setParameters({tessedit_char_whitelist:'0123456789.,xX ',tessedit_pageseg_mode:'6'});ready=true;document.getElementById('status').innerText='✅ Je suis prêt ! Mets ta capture.'}catch(e){document.getElementById('status').innerText='✅ Prêt ! Mets ta capture.'}}
-init();
-function resizeImg(file){return new Promise(res=>{let img=new Image();img.onload=()=>{let c=document.createElement('canvas');let max=900;let w=img.width,h=img.height;if(w>max){h=h*max/w;w=max}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.7))};img.src=URL.createObjectURL(file)})}
-async function go(e){let file=e.target.files[0];if(!file)return;let im=document.getElementById('prev');im.src=URL.createObjectURL(file);im.style.display='block';document.getElementById('status').innerText='⏳ Je lis... 2 sec...';try{let small=await resizeImg(file);let r;if(worker&&ready){r=await worker.recognize(small)}else{r=await Tesseract.recognize(small,'eng',{tessedit_pageseg_mode:'6'})}let text=r.data.text||'';let matches=text.match(/\d+\.\d{1,2}/g)||[];let vals=[...new Set(matches.map(m=>parseFloat(m)).filter(v=>v>=1&&v<=100))].slice(0,12);if(vals.length<3){document.getElementById('status').innerHTML='⚠️ Flou. Retente avec capture zoomée sur les chiffres du haut.<br><small>J ai lu: '+text.slice(0,120)+'</small>';return}document.getElementById('status').innerText='✅ Lu en 2 sec ! '+vals.length+' chiffres';document.getElementById('liste').innerHTML=vals.map(v=>`<span class="pill">${v}x</span>`).join('');analyser(vals)}catch(err){document.getElementById('status').innerText='❌ Réessaie, capture plus claire.'}}
-function analyser(vals){let moy=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);let m2=Math.round(vals.filter(x=>x<2).length/vals.length*100);let el=document.getElementById('resCard');el.style.display='block';let conseil,coul;if(m2>=80){conseil='🛑 STOP - NE JOUE PAS. '+m2+'% crash sous 2x';coul='#dc2626'}else if(m2>=60){conseil='⚠️ PRUDENT - Cashout 1.50x';coul='#f59e0b'}else{conseil='✅ GO - Cashout 2.00x';coul='#16a34a'}document.getElementById('res').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><div style="background:#0a0a12;padding:10px;border-radius:12px">Moyenne<div class="big">${moy}x</div></div><div style="background:#0a0a12;padding:10px;border-radius:12px">Crash &lt;2x<div class="big" style="color:#ef4444">${m2}%</div></div></div><div style="background:${coul};color:${coul==='#f59e0b'?'#000':'#fff'};padding:16px;border-radius:14px;margin-top:12px;font-weight:900;font-size:19px">${conseil}</div>`;el.scrollIntoView({behavior:'smooth'})}
-</script></body></html>
+async function go(e){
+let file=e.target.files[0]; if(!file) return;
+let im=document.getElementById('prev'); im.src=URL.createObjectURL(file); im.style.display='block';
+document.getElementById('status').innerText='⏳ Je lis... 1-2 sec...';
+try{
+let fd=new FormData(); fd.append('file',file); fd.append('apikey','helloworld'); fd.append('OCREngine','2'); fd.append('scale','true');
+let r=await fetch('https://api.ocr.space/parse/image',{method:'POST',body:fd});
+let j=await r.json();
+let text=j.ParsedResults?.[0]?.ParsedText||'';
+let matches=text.match(/\d+\.\d{1,2}/g)||[];
+let vals=[...new Set(matches.map(m=>parseFloat(m)).filter(v=>v>=1&&v<=100))].slice(0,12);
+if(vals.length<3){document.getElementById('status').innerText='⚠️ Flou. Reprends capture zoomée sur les chiffres en haut.'; return;}
+document.getElementById('status').innerText='✅ Lu !';
+document.getElementById('liste').innerHTML=vals.map(v=>`<span class="pill">${v}x</span>`).join('');
+let moy=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+let m2=Math.round(vals.filter(x=>x<2).length/vals.length*100);
+let el=document.getElementById('resCard'); el.style.display='block';
+let conseil,coul;
+if(m2>=80){conseil='🛑 STOP<br>NE JOUE PAS';coul='#dc2626'}
+else if(m2>=60){conseil='⚠️ PRUDENT<br>Cashout 1.50x';coul='#f59e0b'}
+else{conseil='✅ GO<br>Cashout 2.00x';coul='#16a34a'}
+document.getElementById('res').innerHTML=`<div>Moyenne <span
